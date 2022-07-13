@@ -2,14 +2,6 @@
 using System.Windows.Forms;
 using Calculator.Stack;
 
-//Разработать программу, имитирующую работу калькулятора. 
-//    Ввод выражения осуществляется в инфиксной форме. 
-//    Для вычисления значения выражения необходимо использовать стек. 
-//    Арифметическое выражение может содержать в себе целые и дробные числа, знаки математических операций, 
-//    круглые скобки, переменные (не менее трех), деление по модулю, функции (возведение в степень, 
-//    логарифм по основанию два). 
-//    Предусмотреть проверку корректности введенного выражения.
-
 namespace Calculator
 {
     public partial class CalculatorForm : Form
@@ -106,6 +98,13 @@ namespace Calculator
                         _lastInput = str;
                         _brackets.Push(str);
                     }
+                    else if (_lastInput == ")" && str == ")" && _brackets.Count > 0)
+                    {
+                        tbOutput.Text = tbOutput.Text + str;
+                        _lastInput = str;
+
+                        _brackets.Pop();
+                    }
                     return;
                 }
                 if(_lastInput == ")" && str != "(" && str != ")")
@@ -127,6 +126,7 @@ namespace Calculator
 
                     return;
                 }
+                
             }
 
             if (_lastInput == ")")
