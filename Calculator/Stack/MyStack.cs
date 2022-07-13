@@ -39,6 +39,12 @@ namespace Calculator.Stack
                 throw new InvalidOperationException("Стек пуст");
 
             return _head.Data;
-        } 
+        }
+
+        public void Clear()
+        {
+            while (!IsEmpty)
+                Pop();
+        }
     }
 }
