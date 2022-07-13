@@ -1,8 +1,6 @@
-﻿using Calculator.Stack;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Windows.Forms;
-
+using Calculator.Stack;
 
 //Разработать программу, имитирующую работу калькулятора. 
 //    Ввод выражения осуществляется в инфиксной форме. 
@@ -16,10 +14,18 @@ namespace Calculator
 {
     public partial class CalculatorForm : Form
     {
+        private string _lastInput = "";
+        private MyStack<string> _brackets;
+
         public CalculatorForm()
         {
             InitializeComponent();
             InitializeButtons();
+
+            tbOutput.KeyPress += DenyKeyPress;
+            tbRpn.KeyPress += DenyKeyPress;
+
+            _brackets = new MyStack<string>();
         }
 
         private void InitializeButtons()
@@ -34,29 +40,163 @@ namespace Calculator
             btn7.Click += (s, e) => WriteOutput("7");
             btn8.Click += (s, e) => WriteOutput("8");
             btn9.Click += (s, e) => WriteOutput("9");
+            btnDelimeter.Click += (s, e) => WriteOutput(",");
 
             btnPlus.Click += (s, e) => WriteOutput("+");
             btnMinus.Click += (s, e) => WriteOutput("-");
             btnDevide.Click += (s, e) => WriteOutput("/");
             btnMulti.Click += (s, e) => WriteOutput("*");
+            btnDegree.Click += (s, e) => WriteOutput("^");
+            btnLog.Click += (s, e) => WriteOutput("L");
 
             btnLeftBracket.Click += (s, e) => WriteOutput("(");
             btnRightBracket.Click += (s, e) => WriteOutput(")");
 
             btnEqual.Click += (s, e) => Calculate();
+
+            btnClearLast.Click += (s, e) => ClearLast();
+            btnClear.Click += (s, e) => Clear();
         }
 
-        private void WriteOutput(string str) => tbOutput.Text = tbOutput.Text + str;
-
-        private void Calculate()
+        //метод проверки и записи вводимых значений
+        private void WriteOutput(string str)
         {
+            if(str == "L")
+            {
+                if (!IsOperator(_lastInput))
+                    return;
+                if (_lastInput == ")")
+                    return;
+
+                tbOutput.Text = tbOutput.Text + str;
+                _lastInput = str;
+            }
+
+            if (IsOperator(str))
+            {
+                if (_lastInput == ")" && str == "(")
+                    return;
+
+                if (!IsOperator(_lastInput) && str == "(")
+                    return;
+
+                if (tbOutput.Text.Length < 1)
+                {
+                    if(str == "(")
+                    {
+                        tbOutput.Text = tbOutput.Text + str;
+                        _lastInput = str;
+                        _brackets.Push(str);
+                    }
+                    return;
+                }
+
+                if (_lastInput == ")" && str != ")" && str != "(" && str != "L")
+                {
+                    tbOutput.Text = tbOutput.Text + str;
+                    _lastInput = str;
+                    return;
+                }
+
+                if (IsOperator(_lastInput))
+                {
+                    if (str == "(")
+                    {
+                        tbOutput.Text = tbOutput.Text + str;
+                        _lastInput = str;
+                        _brackets.Push(str);
+                    }
+                    return;
+                }
+                if(_lastInput == ")" && str != "(" && str != ")")
+                {
+                    tbOutput.Text = tbOutput.Text + str;
+                    _lastInput = str;
+                    return;
+                }
+
+                if (!IsOperator(_lastInput) && str == ")")
+                {
+                    if (_brackets.IsEmpty) 
+                        return;
+
+                    tbOutput.Text = tbOutput.Text + str;
+                    _lastInput = str;
+
+                    _brackets.Pop();
+
+                    return;
+                }
+            }
+
+            if (_lastInput == ")")
+                return;
+
+            tbOutput.Text = tbOutput.Text + str;
+            _lastInput = str;
+        }
+
+        //метод вызывающийся при нажатии по кнопке =
+        private void Calculate()
+        {            
+            if(tbOutput.Text.Length < 1)
+                return;
+
+            if (!_brackets.IsEmpty)
+            {
+                MessageBox.Show(
+                   $"Ошибка. {_brackets.Count} скобок не закрыто",
+                   "Ошибка",
+                   MessageBoxButtons.OK,
+                   MessageBoxIcon.Information);
+                return;
+            }
+
+            if (IsOperator(_lastInput) && _lastInput != ")")
+            {
+                MessageBox.Show(
+                    $"Ошибка. Выражение не завершено",
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
             tbRpn.Text = GetExpression(tbOutput.Text);
+
             MessageBox.Show(
                 $"Результат вычисления: {Counting(GetExpression(tbOutput.Text))}", 
                 "Результат", 
                 MessageBoxButtons.OK, 
                 MessageBoxIcon.Information);
+        }
 
+        //удалить последний символ
+        private void ClearLast()
+        {
+            if (tbOutput.Text.Length < 1) return;
+            var cleared = tbOutput.Text[tbOutput.Text.Length - 1];
+
+            if (cleared == ')')
+                _brackets.Push("(");
+            if (cleared == '(')
+                _brackets.Pop();
+
+            tbOutput.Text = tbOutput.Text.Substring(0, tbOutput.Text.Length - 1);
+
+            if (tbRpn.Text.Length < 1)
+                _lastInput = "";
+            else
+                _lastInput = tbOutput.Text[tbOutput.Text.Length - 1].ToString();
+        }
+
+        //Очистить всё
+        private void Clear()
+        {
+            tbOutput.Text = "";
+            tbRpn.Text = "";
+
+            _brackets.Clear();
+            _lastInput = "";
         }
 
         //Преобразование в обратную польскую нотацию
@@ -141,6 +281,15 @@ namespace Calculator
                 }
                 else if (IsOperator(input[i]))
                 {
+                    if(input[i] == 'L')
+                    {
+                        double x = temp.Pop();
+                        result = Math.Log2(x);
+
+                        temp.Push(result);
+                        continue;
+                    }
+
                     //Берем два последних значения из стека
                     double a = temp.Pop();
                     double b = temp.Pop();
@@ -170,9 +319,16 @@ namespace Calculator
         }
 
         //Проверка на принадлежность оператору
+        private bool IsOperator(string с)
+        {
+            if (("+-/*^()L".IndexOf(с) != -1))
+                return true;
+            return false;
+        }
+
         private bool IsOperator(char с)
         {
-            if (("+-/*^()".IndexOf(с) != -1))
+            if (("+-/*^()L".IndexOf(с) != -1))
                 return true;
             return false;
         }
@@ -189,8 +345,13 @@ namespace Calculator
                 case '*': return 4;
                 case '/': return 4;
                 case '^': return 5;
+                case 'L': return 5;
                 default: return 6;
             }
         }
+
+        private void DenyKeyPress(object s, KeyPressEventArgs e) => e.Handled = true;
+            
+        
     }    
 }

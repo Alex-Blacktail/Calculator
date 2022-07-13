@@ -30,6 +30,7 @@
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnClear = new System.Windows.Forms.Button();
             this.btnEqual = new System.Windows.Forms.Button();
             this.btnDelimeter = new System.Windows.Forms.Button();
             this.btn0 = new System.Windows.Forms.Button();
@@ -83,6 +84,7 @@
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel2.Controls.Add(this.btnClear, 2, 0);
             this.tableLayoutPanel2.Controls.Add(this.btnEqual, 3, 5);
             this.tableLayoutPanel2.Controls.Add(this.btnDelimeter, 2, 5);
             this.tableLayoutPanel2.Controls.Add(this.btn0, 1, 5);
@@ -118,6 +120,17 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(312, 369);
             this.tableLayoutPanel2.TabIndex = 1;
+            // 
+            // btnClear
+            // 
+            this.btnClear.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnClear.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btnClear.Location = new System.Drawing.Point(159, 3);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(72, 55);
+            this.btnClear.TabIndex = 30;
+            this.btnClear.Text = "C";
+            this.btnClear.UseVisualStyleBackColor = true;
             // 
             // btnEqual
             // 
@@ -430,5 +443,6 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.TextBox tbRpn;
         private System.Windows.Forms.TextBox tbOutput;
+        private System.Windows.Forms.Button btnClear;
     }
 }
